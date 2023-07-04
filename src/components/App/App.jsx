@@ -19,9 +19,9 @@ export const App = () => {
       ...data
     };
 
-    setContacts(prevState => prevState.find(({ name }) => name.toLowerCase() === newContact.name.toLowerCase()) ?
+    contacts.find(({ name }) => name.toLowerCase() === newContact.name.toLowerCase()) ?
       alert(`${newContact.name} is already in contacts`) :
-      [...prevState, newContact]);
+      setContacts(prevState => [...prevState, newContact]);
   };
 
   const deleteContact = contactId => {
