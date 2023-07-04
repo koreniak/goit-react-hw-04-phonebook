@@ -1,9 +1,11 @@
 import { nanoid } from 'nanoid';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useEffect, useMemo, useState } from 'react';
+import { Title } from "./App.styled";
 import ContactForm from "../ContactForm";
 import Filter from "../Filter";
 import ContactList from "../ContactList";
-import { Title } from "./App.styled";
-import { useEffect, useState } from 'react';
 
 export const App = () => {
   const [contacts, setContacts] = useState(() => JSON.parse(localStorage.getItem('contacts')) ?? []);
@@ -13,6 +15,14 @@ export const App = () => {
     localStorage.setItem('contacts', JSON.stringify(contacts));
   }, [contacts]);
 
+  const getFilteredContacts = useMemo(() => {
+    const normalizedFilter = filter.toLowerCase();
+
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(normalizedFilter)
+    );
+  }, [contacts, filter]);
+
   const addContact = data => {
     const newContact = {
       id: nanoid(),
@@ -20,37 +30,35 @@ export const App = () => {
     };
 
     contacts.find(({ name }) => name.toLowerCase() === newContact.name.toLowerCase()) ?
-      alert(`${newContact.name} is already in contacts`) :
+      toast.error(`${newContact.name} is already in contacts`) :
       setContacts(prevState => [...prevState, newContact]);
   };
-
-  const deleteContact = contactId => {
-    setContacts(prevState => prevState.filter(contact => contact.id !== contactId));
-  };
-
-  const changeFilter = e => setFilter(e.target.value);
-
-  const getFilteredContacts = () => {
-    const normalizedFilter = filter.toLowerCase();
-
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter)
-    );
-  };
-
+// `${newContact.name} is already in contacts`
   return (
-      <div>
-        <Title>Phonebook</Title>
-        <ContactForm addContact={addContact} />
-        <Title>Contacts</Title>
-        <Filter
-          value={filter}
-          onChange={changeFilter}
-        />
-        <ContactList
-          options={getFilteredContacts()}
-          onDeleteContact={deleteContact}
-        />
-      </div>
-    );
+    <div>
+      <Title>Phonebook</Title>
+      <ContactForm addContact={addContact} />
+      <Title>Contacts</Title>
+      <Filter
+        value={filter}
+        onChange={e => setFilter(e.target.value)}
+      />
+      <ContactList
+        options={getFilteredContacts}
+        onDeleteContact={contactId => setContacts(prevState => prevState.filter(contact => contact.id !== contactId))}
+      />
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </div>
+  );
 };
